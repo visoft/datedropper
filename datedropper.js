@@ -1,1057 +1,1219 @@
+jQuery.easing._dd_easing = function(x, t, b, c, d) {
+    return -c * ((t = t / d - 1) * t * t * t - 1) + b;
+};
 
+(function($) {
+    $.fn.dateDropper = function(options) {
+        return $(this).each(function() {
+            if ($(this).is('input') && $(this).attr('type') == "text") {
 
-	//////////////////////////////////////
-	// DATEDROPPER Version 1.2	    	//
-	// Last Updates: 27/03/2015	    	//
-	//				    				//
-	// Made with love by		    	//
-	// Felice Gattuso		    		//
-	//////////////////////////////////////
-	
+                var
+                    t_y_cur = new Date().getFullYear(),
+                    t_d_cur = new Date().getDate(),
+                    t_m_cur = new Date().getMonth();
 
-(function ( $ ) {
-	$.fn.dateDropper = function( options ) {
-		return $(this).each(function() {
-			
-		// IF IS INPUT AND TYPE IS TEXT //
-		
-		if( $(this).is('input') && $(this).attr('type') == "text" ) {
-		
-		// DECLARE CURRENT VARIABLE //
-		
-		var
-		dd_y_current	=	 new Date().getFullYear(),
-		dd_d_current 	=	 new Date().getDate(),
-		dd_m_current	=	 new Date().getMonth(), 
-		
-		// SET OPTIONS //
-		
-		settings = $.extend({
-			
-			animate_current 	: true,
-			animation 			: "fadein",
-			format				: "m/d/Y",
-			lang				: "en",
-			lock 				: false,
-			maxYear 			: dd_y_current,
-			minYear 			: 1970,
-			placeholder			: false,
-			years_multiple 		: 10,
-			
-			//style
-			color 				: "#f87a54",
-			textColor 			: "#000000",
-			bgColor 			: "#FFFFFF",
-			borderColor 		: "#000000",
-			borderRadius 		: 8,
-			boxShadow 			: "0 0px 0px 6px rgba(0,0,0,0.05)",
-			
-		}, options ),
-		
-		// DECLARE VARIABLE //
+                var
+                    _dd_m,
+                    _dd_d,
+                    _dd_y,
+                    _dd_sub_y;
 
-		dd_input		= $(this),
-		drop_length 	= $('.dd_wrap').length + 1,
-		bissextile		= function(yr) {return !((yr % 4) || (!(yr % 100) && (yr % 400)));}, //bissextile year
-		range 			= 100, 
-		isHex  			= /^#[0-9A-F]{6}$/i.test(settings.color),
-		ymultiselect 	= 0;
-		
-		if(!isHex) settings.color = '#f87a54';
-		if(settings.maxYear<dd_y_current) dd_y_current = settings.maxYear;
-		
-		var
-		yranger 	= function(yr) { 
-			for ( var yy = settings.minYear; yy <= settings.maxYear ; yy++ ) {
-				
-				var remainder = yy % settings.years_multiple;
-				if (remainder == 0) 
-				if(yr>=yy&&yr<(yy+settings.years_multiple)||yr < yy) {		
-					ymultiselect = yy;
-					return yy;
-				}
+                var
+                    _dd_id = $('.dd-w').length;
 
-			}
-		};
-		
-		// SWITCH LANGUAGES //
-		
-		switch(settings.lang) {
-			//Arabic
-			case 'ar':
-				var monthNames = [
-					"جانفي",
-					"فيفري",
-					"مارس",
-					"أفريل",
-					"ماي",
-					"جوان",
-					"جويلية",
-					"أوت",
-					"سبتمبر",
-					"أكتوبر",
-					"نوفمبر",
-					"ديسمبر"
-				]; 
-				var dayNames = [
-					'الأحد',
-					'الإثنين',
-					'الثلثاء',
-					'الأربعاء',
-					'الخميس',
-					'الجمعة',
-					'السبت'
-				];
-				break;
-			//italian
-			case 'it': 
-				var monthNames = [
-					"Gennaio",
-					"Febbraio",
-					"Marzo",
-					"Aprile",
-					"Maggio",
-					"Giugno",
-					"Luglio",
-					"Agosto",
-					"Settembre",
-					"Ottobre",
-					"Novembre",
-					"Dicembre"
-				]; 
-				var dayNames = [
-					'Domenica',
-					'Lunedì',
-					'Martedì',
-					'Mercoledì',
-					'Giovedì',
-					'Venerdì',
-					'Sabato'
-				]; 
-				break;
-			//hungarian	
-			case 'hu':
-				var monthNames = [
-					"január",
-					"február",
-					"március",
-					"április",
-					"május",
-					"június",
-					"július",
-					"augusztus",
-					"szeptember",
-					"október",
-					"november",
-					"december"
-				];
-				var dayNames = [
-					'vasárnap',
-					'hétfő',
-					'kedd',
-					'szerda',
-					'csütörtök',
-					'péntek',
-					'szombat'
-				];
-				break;
-			//greek
-			case 'gr': 
-				var monthNames = [
-					"Ιανουάριος",
-					"Φεβρουάριος",
-					"Μάρτιος",
-					"Απρίλιος",
-					"Μάιος",
-					"Ιούνιος",
-					"Ιούλιος",
-					"Αύγουστος",
-					"Σεπτέμβριος",
-					"Οκτώβριος",
-					"Νοέμβριος",
-					"Δεκέμβριος"
-				];
-				var dayNames = [
-					'Κυριακή',
-					'Δευτέρα',
-					'Τρίτη',
-					'Τετάρτη',
-					'Πέμπτη',
-					'Παρασκευή',
-					'Σάββατο'
-				];
-				break;
-			//espanol
-			case 'es': 
-				var monthNames = [
-					"Enero",
-					"Febrero",
-					"Marzo",
-					"Abril",
-					"Mayo",
-					"Junio",
-					"Julio",
-					"Agosto",
-					"Septiembre",
-					"Octubre",
-					"Noviembre",
-					"Diciembre"
-				];
-				var dayNames = [
-					'Domingo',
-					'Lunes',
-					'Martes',
-					'Miércoles',
-					'Jueves',
-					'Viernes',
-					'Sábado'
-				];
-				break;
-			//dansk
-			case 'da':
-				var monthNames = [
-					"januar",
-					"februar",
-					"marts",
-					"april",
-					"maj",
-					"juni",
-					"juli",
-					"august",
-					"september",
-					"oktober",
-					"november",
-					"december"
-				];
-				var dayNames = [
-					'søndag',
-					'mandag',
-					'tirsdag',
-					'onsdag',
-					'torsdag',
-					'fredag',
-					'lørdag'
-				];
-				break;
-			//deutsch
-			case 'de':
-				var monthNames = [
-					"Januar",
-					"Februar",
-					"März",
-					"April",
-					"Mai",
-					"Juni",
-					"Juli",
-					"August",
-					"September",
-					"Oktober",
-					"November",
-					"Dezember"
-				];
-				var dayNames = [
-					'Sonntag',
-					'Montag',
-					'Dienstag',
-					'Mittwoch',
-					'Donnerstag',
-					'Freitag',
-					'Samstag'
-				];
-				break;
-			//dutch
-			case 'nl':
-				var monthNames = [
-					"januari",
-					"februari",
-					"maart",
-					"april",
-					"mei",
-					"juni",
-					"juli",
-					"augustus",
-					"september",
-					"oktober",
-					"november",
-					"december"
-				];
-				var dayNames = [
-					'zondag',
-					'maandag',
-					'dinsdag',
-					'woensdag',
-					'donderdag',
-					'vrijdag',
-					'zaterdag'
-				];
-				break;
-			//francais
-			case 'fr':
-				var monthNames = [
-					"Janvier",
-					"Février",
-					"Mars",
-					"Avril",
-					"Mai",
-					"Juin",
-					"Juillet",
-					"Août",
-					"Septembre",
-					"Octobre",
-					"Novembre",
-					"Décembre"
-				]; 
-				var dayNames = [
-					'Dimanche',
-					'Lundi',
-					'Mardi',
-					'Mercredi',
-					'Jeudi',
-					'Vendredi',
-					'Samedi'
-				];
-				break;
-			//polski
-			case 'pl':
-				var monthNames = [
-					"styczeń",
-					"luty",
-					"marzec",
-					"kwiecień",
-					"maj",
-					"czerwiec",
-					"lipiec",
-					"sierpień",
-					"wrzesień",
-					"październik",
-					"listopad",
-					"grudzień"
-				];
-				var dayNames = [
-					'niedziela',
-					'poniedziałek',
-					'wtorek',
-					'środa',
-					'czwartek',
-					'piątek',
-					'sobota'
-				];
-				break;
-			//portuguese
-			case 'pt':
-				var monthNames = [
-					"Janeiro",
-					"Fevereiro",
-					"Março",
-					"Abril",
-					"Maio",
-					"Junho",
-					"Julho",
-					"Agosto",
-					"Setembro",
-					"Outubro",
-					"Novembro",
-					"Dezembro"
-				];
-				var dayNames = [
-					"Domingo",
-					"Segunda",
-					"Terça",
-					"Quarta",
-					"Quinta",
-					"Sexta",
-					"Sábado"
-				];
-				break;
-			//slovenian
-			case 'si':
-			    var monthNames = [
-			        "januar",
-			        "februar",
-			        "marec",
-			        "april",
-			        "maj",
-			        "junij",
-			        "julij",
-			        "avgust",
-			        "september",
-			        "oktober",
-			        "november",
-			        "december"
-			    ];
-			    var dayNames = [
-			        'nedelja',
-			        'ponedeljek',
-			        'torek',
-			        'sreda',
-			        'četrtek',
-			        'petek',
-			        'sobota'
-			    ];
-			    break;
-			//ukrainian
-		    case 'uk':
-		            var monthNames = [
-		                "січень",
-		                "лютий",
-		                "березень",
-		                "квітень",
-		                "травень",
-		                "червень",
-		                "липень",
-		                "серпень",
-		                "вересень",
-		                "жовтень",
-		                "листопад",
-		                "грудень"
-		             ];
-		            var dayNames = [
-		                'неділя',
-		                'понеділок',
-		                'вівторок',
-		                'середа',
-		                'четвер',
-		                'п\'ятниця',
-		                'субота'
-		            ];
-		            break;
-			//russian
-			case 'ru':
-				var monthNames = [
-					"январь",
-					"февраль",
-					"март",
-					"апрель",
-					"май",
-					"июнь",
-					"июль",
-					"август",
-					"сентябрь",
-					"октябрь",
-					"ноябрь",
-					"декабрь"
-				];
-				var dayNames = [
-					'воскресенье',
-					'понедельник',
-					'вторник',
-					'среда',
-					'четверг',
-					'пятница',
-					'суббота'
-				];
-				break;
-			//turkish
-			case 'tr':
-				var monthNames = [
-					"Ocak",
-					"Şubat",
-					"Mart",
-					"Nisan",
-					"Mayıs",
-					"Haziran",
-					"Temmuz",
-					"Ağustos",
-					"Eylül",
-					"Ekim",
-					"Kasım",
-					"Aralık"
-				];
-				var dayNames = [
-					'Pazar',
-					'Pazartesi',
-					'Sali',
-					'Çarşamba',
-					'Perşembe',
-					'Cuma',
-					'Cumartesi'
-				];
-				break;
-			//korean	
-			case 'ko':
-				var monthNames = [
-					"1월",
-					"2월",
-					"3월",
-					"4월",
-					"5월",
-					"6월",
-					"7월",
-					"8월",
-					"9월",
-					"10월",
-					"11월",
-					"12월"
-				];
-				var dayNames = [
-					'일요일',
-					'월요일',
-					'화요일',
-					'수요일',
-					'목요일',
-					'금요일',
-					'토요일'
-				];
-				break;
-			//finnish
-			case 'fi':
-				var monthNames = [
-					"Tammikuu",
-					"Helmikuu",
-					"Maaliskuu",
-					"Huhtikuu",
-					"Toukokuu",
-					"Kesäkuu",
-					"Heinäkuu",
-					"Elokuu",
-					"Syyskuu",
-					"Lokakuu",
-					"Marraskuu",
-					"Joulukuu"
-				];
-				var dayNames = [
-					'Sunnuntai',
-					'Maanantai',
-					'Tiistai',
-					'Keskiviikko',
-					'Torstai',
-					'Perjantai',
-					'Lauantai'
-				];
-				break;
-			//english	
-			default:
-				var monthNames = [
-					"January",
-					"February",
-					"March",
-					"April",
-					"May",
-					"June",
-					"July",
-					"August",
-					"September",
-					"October",
-					"November",
-					"December"
-				];
-				var dayNames = [
-					'Sunday',
-					'Monday',
-					'Tuesday',
-					'Wednesday',
-					'Thursday',
-					'Friday',
-					'Saturday'
-				];
-				break;
-		};
+                var _structure = '<div class="dd-w dd-init" id="dd-w-' + _dd_id + '"><div class="dd-o"></div><div class="dd-c"><div class="dd-w-c"><div class="dd-b dd-m"><div class="dd-ul"><a class="dd-n dd-n-left"><i class="dd-icon-left" ></i></a><a class="dd-n dd-n-right"><i class="dd-icon-right" ></i></a><ul></ul></div></div><div class="dd-b dd-d"><div class="dd-ul"><a class="dd-n dd-n-left"><i class="dd-icon-left" ></i></a><a class="dd-n dd-n-right"><i class="dd-icon-right" ></i></a><ul></ul></div></div><div class="dd-b dd-y"><div class="dd-ul"><a class="dd-n dd-n-left"><i class="dd-icon-left" ></i></a><a class="dd-n dd-n-right"><i class="dd-icon-right" ></i></a><ul></ul></div></div><div class="dd-s-b dd-s-b-m dd-trans"><div class="dd-s-b-ul"><ul></ul></div></div><div class="dd-s-b dd-s-b-d dd-trans"><div class="dd-s-b-ul"><ul></ul></div></div><div class="dd-s-b dd-s-b-y dd-trans"><div class="dd-s-b-ul"><ul></ul></div></div><div class="dd-s-b dd-s-b-s-y dd-trans"><div class="dd-s-b-ul"><ul></ul></div></div><div class="dd-s-b-s"><i class="dd-icon-close" ></i></div><div class="dd-b dd-sub-y"><div class="dd-ul"><a class="dd-n dd-n-left"><i class="dd-icon-left" ></i></a><a class="dd-n dd-n-right"><i class="dd-icon-right" ></i></a><ul></ul></div></div><div class="dd-s"><a><i class="dd-icon-check" ></i></a></div></div></div></div>';
 
+                $('body').append(_structure);
 
-		// CREATE WRAP //
-		
-		$('<div class="dd_wrap" id="dd_'+drop_length+'"><div class="dd_overlay"></div><div class="dd_"></div></div>')
-		.appendTo('body');
-		
-		var 
-		dd_id 		= $('#dd_'+drop_length),
-		dd_inner 	= dd_id.find('.dd_');
-		dd_overlay 	= dd_id.find('.dd_overlay');
-	
-		// DATEDROPPER POSITION ON RESIZE //
-		
-		$(window).on('resize',function(){
-			dd_inner.css({
-				'top':dd_input.offset().top+(dd_input.height()+12),
-				'left':(dd_input.offset().left+((dd_input.outerWidth()/2)-(range/2)))-2
-			});
-		});
-		
-		// SET STYLE //
-		
-		$( "<style>#dd_"+drop_length+" .dd_ {border-color: "+settings.borderColor+"; background: "+settings.bgColor+"; border-radius: "+settings.borderRadius+"px; -moz-border-radius: "+settings.borderRadius+"px; -webkit-border-radius: "+settings.borderRadius+"px; color: "+settings.textColor+";box-shadow: "+settings.boxShadow+";-webkit-box-shadow: "+settings.boxShadow+";-moz-box-shadow: "+settings.boxShadow+";}#dd_"+drop_length+" .dd_ .dd_submit,#dd_"+drop_length+" .dd_ .dd_r_ ul li.dd_sltd_  { background-color: "+settings.color+"; } #dd_"+drop_length+" .dd_ .dd_d_ .dd_sl_ ul li em , #dd_"+drop_length+" .dd_ .dd_d_ .dd_sl_ ul li.dd_sunday,#dd_"+drop_length+" .dd_ .dd_all_ ul li.dd_sunday{ color: "+settings.color+"; }#dd_"+drop_length+" .dd_ .dd_all_ ul li.dd_sunday{ border-bottom: 2px solid "+settings.color+"; } #dd_"+drop_length+" .dd_ .dd_r_ ul li:hover,#dd_"+drop_length+" .dd_ .dd_r_ ul li.dd_sltd_,#dd_"+drop_length+" .dd_ .dd_r_ ul li {border-color: "+settings.color+"; } #dd_"+drop_length+" .dd_ .dd_submit {-webkit-border-bottom-right-radius: "+((settings.borderRadius)-3)+"px;-webkit-border-bottom-left-radius: "+((settings.borderRadius)-3)+"px;-moz-border-radius-bottomright: "+((settings.borderRadius)-3)+"px;-moz-border-radius-bottomleft: "+((settings.borderRadius)-3)+"px;border-bottom-right-radius: "+((settings.borderRadius)-3)+"px;border-bottom-left-radius: "+((settings.borderRadius)-3)+"px;}#dd_"+drop_length+" .dd_:after {background:"+settings.bgColor+";border-top-color:"+settings.borderColor+";border-left-color:"+settings.borderColor+";}#dd_"+drop_length+" .dd_ .dd_r_ ul li,#dd_"+drop_length+" .dd_ .dd_all_ {background:"+settings.bgColor+";}#dd_"+drop_length+" .dd_ .dd_all_{box-shadow: inset 0 -2px 0 "+settings.color+";}#dd_"+drop_length+" .dd_ .dd_r_:after{border-bottom: 2px solid "+settings.color+"}</style>" ).appendTo( "head" );
+                var
+                    _dd_input = $(this),
+                    _dd = $('#dd-w-' + _dd_id),
+                    _dd_isB = function(y) {
+                        return !((y % 4) || (!(y % 100) && (y % 400)))
+                    },
+                    _dd_0 = function(n) {
+                        return n < 10 ? '0' + n : n
+                    },
+                    _dd_settings = $.extend({
 
-		// CREATE STRUCTURE //
-		
-		dd_input
-		.attr({
-			'readonly':'readonly'
-		})
-		.addClass('dd_locked');
-		
-		if(dd_input.val()) {
-	
-			var 
-			txt = dd_input.val(),
-			number_regex = txt.match(/(?:\d{4}|\d{1,2})/g),
-			format_regex = settings.format.match(/[a-zA-Z]+/g),
-			tempY = null,
-			tempD = null,
-			tempM = null;
-			
-			if(number_regex) {
+                        animate: true,
+                        init_animation: "fadein",
+                        format: "m/d/Y",
+                        lang: "en",
+                        lock: false,
+                        maxYear: t_y_cur,
+                        minYear: 1970,
+                        yearsRange: 10,
+
+                        //CSS PRIOPRIETIES//
+                        dropPrimaryColor: "#01CEFF",
+                        dropTextColor: "#333333",
+                        dropBackgroundColor: "#FFFFFF",
+                        dropBorder: "1px solid #08C",
+                        dropBorderRadius: 8,
+                        dropShadow: "0 0 10px 0 rgba(0, 136, 204, 0.45)",
+                        dropWidth: 124,
+						dropTextWeight: 'bold'
+
+                    }, options),
+                    _dd_event = null,
+					_dd_init_state = false,
+					_dd_buffer = false;
 					
-				for(var i = 0; i<=number_regex.length; i++){
-					if(number_regex[i]){
-						if(number_regex[i].length==4) tempY = number_regex[i];
-						else if(number_regex[i].length<=2&&number_regex[i].length>0){
-							if(number_regex[i]<=12&&format_regex[i]=='m'||format_regex[i]=='n') tempM = number_regex[i];
-							else tempD = number_regex[i]
-						}
+				var _dd_color = function (col, amt) {
+  
+					var usePound = false;
+				  
+					if (col[0] == "#") {
+						col = col.slice(1);
+						usePound = true;
 					}
+				 
+					var num = parseInt(col,16);
+				 
+					var r = (num >> 16) + amt;
+				 
+					if (r > 255) r = 255;
+					else if  (r < 0) r = 0;
+				 
+					var b = ((num >> 8) & 0x00FF) + amt;
+				 
+					if (b > 255) b = 255;
+					else if  (b < 0) b = 0;
+				 
+					var g = (num & 0x0000FF) + amt;
+				 
+					if (g > 255) g = 255;
+					else if (g < 0) g = 0;
+				 
+					return (usePound?"#":"") + (g | (b << 8) | (r << 16)).toString(16);
+				  
+				};
+				
+				var _dd_c_invert = function (hexTripletColor) {
+					var color = hexTripletColor;
+					color = color.substring(1);           // remove #
+					color = parseInt(color, 16);          // convert to integer
+					color = 0xFFFFFF ^ color;             // invert three bytes
+					color = color.toString(16);           // convert to hex
+					color = ("000000" + color).slice(-6); // pad with leading zeros
+					color = "#" + color;                  // prepend #
+					return color;
 				}
-				
-				if(tempM<10) { if(tempM.length==2) tempM = tempM.substr(1); }
-				if(tempD<10) { if(tempD.length==2) tempD = tempD.substr(1); }
-				
-				if(tempD==null) tempD = dd_d_current;
-				if(tempM==null) tempM = dd_m_current;
-				if(tempY==null) tempY = dd_y_current;
-			
-			}
-			if(tempY<settings.minYear) settings.minYear = tempY;
-			if(tempY>settings.maxYear) settings.maxYear = tempY;
-		
-		}
-		
-		else {
-			if(settings.placeholder) dd_input.val(settings.placeholder);
-		}
-		
-		
-		dd_inner.append('<div class="dd_sw_ dd_m_"><a class="dd_nav_ dd_prev_"></a><a class="dd_nav_ dd_next_"></a><div class="dd_sl_"></div></div>');
-		dd_inner.append('<div class="dd_sw_ dd_d_"><a class="dd_nav_ dd_prev_"></a><a class="dd_nav_ dd_next_"></a><div class="dd_sl_"></div></div>');
-		dd_inner.append('<div class="dd_sw_ dd_y_"><a class="dd_nav_ dd_prev_"></a><a class="dd_nav_ dd_next_"></a><div class="dd_sl_"></div></div>');
-		dd_inner.append('<div class="dd_all_ dd_a_d_"></div>');
-		dd_inner.append('<div class="dd_all_ dd_a_m_"></div>');
-		dd_inner.append('<div class="dd_all_ dd_a_y_"></div>');
-		if(settings.years_multiple) dd_inner.append('<div class="dd_r_"></div>');
-		dd_inner.append('<div class="dd_submit"></div>');
-		
-		var
-		dd_m 	= dd_inner.find('.dd_m_'),
-		dd_d 	= dd_inner.find('.dd_d_'),
-		dd_y 	= dd_inner.find('.dd_y_'),
-		dd_a_d 	= dd_inner.find('.dd_a_d_'),
-		dd_a_m 	= dd_inner.find('.dd_a_m_'),
-		dd_a_y 	= dd_inner.find('.dd_a_y_'),
-		dd_y_r 	= dd_inner.find('.dd_r_'),
-		dd_submit 	= dd_inner.find('.dd_submit');	
-		
-		// MONTH //
-		
-		dd_m.find('.dd_sl_').append('<ul></ul>');
-		dd_a_m.append('<ul></ul>');
-		
-		for ( var mm = 1; mm <= 12; mm++ ) {
-			
-			months = (monthNames[mm-1]).substr(0, 3);
-			dd_m.find('ul').append('<li value="'+mm+'">'+months+'</li>');
-			dd_a_m.find('ul').append('<li value="'+mm+'">'+mm+'</li>')
-	
-		}
-				
-		// DAY //
-		
-		dd_d.find('.dd_sl_').append('<ul></ul>');
-		dd_a_d.append('<ul></ul>');
-		
-		for ( var dd = 1; dd <= 31; dd++ ) {
-			
-			if(dd<10) ddd = '0'+dd; else ddd = dd;
-			dd_d.find('ul').append('<li value="'+dd+'">'+ddd+'<em ></em></li>');
-			dd_a_d.find('ul').append('<li value="'+dd+'">'+ddd+'</li>')
-	
-		}
-		
-		// YEAR //
-		
-		dd_y.find('.dd_sl_').append('<ul></ul>');
-		
-		for ( var yy = settings.minYear; yy <= settings.maxYear ; yy++ ) {
-			
-			bissextile_return = bissextile(yy);
-			dd_y.find('ul').append('<li value="'+yy+'" data-filter="'+bissextile_return+'">'+yy+'</li>')
-	
-		}
 
-		// YEARS MULTIPLE //
-		
-		if(settings.years_multiple) {
-		
-			dd_y_r.append('<ul></ul>');
-			dd_a_y.append('<ul></ul>');
-			
-			for ( var yr = settings.minYear; yr <= settings.maxYear ; yr++ ) {
-				
-				var remainder = yr % settings.years_multiple;
-				if (remainder == 0) {
-						dd_y_r.find('ul').append('<li value="'+yr+'"></li>');						
-				}
-			}
-			
-			var ww = range/dd_y_r.find('li').length;
 
-		}
+                $('<style>#dd-w-' + _dd_id + ' { font-weight: ' + _dd_settings.dropTextWeight + '; } #dd-w-' + _dd_id + ' .dd-w-c,#dd-w-' + _dd_id + ' .dd-ul li,#dd-w-' + _dd_id + ' .dd-s-b-ul ul { width:' + _dd_settings.dropWidth + 'px; } #dd-w-' + _dd_id + ' .dd-w-c{color:' + _dd_settings.dropTextColor + ';background:' + _dd_settings.dropBackgroundColor + ';border:' + _dd_settings.dropBorder + ';box-shadow:' + _dd_settings.dropShadow + ';border-radius:' + _dd_settings.dropBorderRadius + 'px}#dd-w-' + _dd_id + ' .dd-w-c,#dd-w-' + _dd_id + ' .dd-s-b{background:' + _dd_settings.dropBackgroundColor + '}#dd-w-' + _dd_id + ' .dd-sun,#dd-w-' + _dd_id + ' .dd-s-b-ul li.dd-on{color:' + _dd_settings.dropPrimaryColor + '}#dd-w-' + _dd_id + ' .dd-c .dd-s,#dd-w-' + _dd_id + ' .dd-s-b-s,#dd-w-' + _dd_id + ' .dd-s-b-sub-y,#dd-w-' + _dd_id + ' .dd-sub-y{background:' + _dd_settings.dropPrimaryColor + ';color:' + _dd_settings.dropBackgroundColor + '}#dd-w-' + _dd_id + ' .dd-c .dd-s a,#dd-w-' + _dd_id + ' .dd-c .dd-s a:hover{color:' + _dd_settings.dropBackgroundColor + '}#dd-w-' + _dd_id + ' .dd-c:after{border-left:' + _dd_settings.dropBorder + ';border-top:' + _dd_settings.dropBorder + '}#dd-w-' + _dd_id + '.dd-bottom .dd-c:after{background:' + _dd_settings.dropBackgroundColor + '}#dd-w-' + _dd_id + '.dd-top .dd-c:after{background:' + _dd_settings.dropPrimaryColor + '}#dd-w-' + _dd_id + ' .dd-n,#dd-w-' + _dd_id + ' .dd-sun{color:' + _dd_settings.dropPrimaryColor + '}#dd-w-' + _dd_id + ' .dd-sub-y .dd-n{color:' + _dd_settings.dropBackgroundColor + '} #dd-w-' + _dd_id + ' .dd-c .dd-s:hover,#dd-w-' + _dd_id + ' .dd-s-b-s:hover { background:' + _dd_color(_dd_settings.dropPrimaryColor,-20) + '; }</style>').appendTo('head');
+
+                switch (_dd_settings.lang) {
+
+                    //Arabic
+                    case 'ar':
+                        var mn = [
+                            "جانفي",
+                            "فيفري",
+                            "مارس",
+                            "أفريل",
+                            "ماي",
+                            "جوان",
+                            "جويلية",
+                            "أوت",
+                            "سبتمبر",
+                            "أكتوبر",
+                            "نوفمبر",
+                            "ديسمبر"
+                        ];
+                        var dn = [
+                            'الأحد',
+                            'الإثنين',
+                            'الثلثاء',
+                            'الأربعاء',
+                            'الخميس',
+                            'الجمعة',
+                            'السبت'
+                        ];
+                        break;
+                        //italian
+                    case 'it':
+                        var mn = [
+                            "Gennaio",
+                            "Febbraio",
+                            "Marzo",
+                            "Aprile",
+                            "Maggio",
+                            "Giugno",
+                            "Luglio",
+                            "Agosto",
+                            "Settembre",
+                            "Ottobre",
+                            "Novembre",
+                            "Dicembre"
+                        ];
+                        var dn = [
+                            'Domenica',
+                            'Lunedì',
+                            'Martedì',
+                            'Mercoledì',
+                            'Giovedì',
+                            'Venerdì',
+                            'Sabato'
+                        ];
+                        break;
+                        //hungarian	
+                    case 'hu':
+                        var mn = [
+                            "január",
+                            "február",
+                            "március",
+                            "április",
+                            "május",
+                            "június",
+                            "július",
+                            "augusztus",
+                            "szeptember",
+                            "október",
+                            "november",
+                            "december"
+                        ];
+                        var dn = [
+                            'vasárnap',
+                            'hétfő',
+                            'kedd',
+                            'szerda',
+                            'csütörtök',
+                            'péntek',
+                            'szombat'
+                        ];
+                        break;
+                        //greek
+                    case 'gr':
+                        var mn = [
+                            "Ιανουάριος",
+                            "Φεβρουάριος",
+                            "Μάρτιος",
+                            "Απρίλιος",
+                            "Μάιος",
+                            "Ιούνιος",
+                            "Ιούλιος",
+                            "Αύγουστος",
+                            "Σεπτέμβριος",
+                            "Οκτώβριος",
+                            "Νοέμβριος",
+                            "Δεκέμβριος"
+                        ];
+                        var dn = [
+                            'Κυριακή',
+                            'Δευτέρα',
+                            'Τρίτη',
+                            'Τετάρτη',
+                            'Πέμπτη',
+                            'Παρασκευή',
+                            'Σάββατο'
+                        ];
+                        break;
+                        //espanol
+                    case 'es':
+                        var mn = [
+                            "Enero",
+                            "Febrero",
+                            "Marzo",
+                            "Abril",
+                            "Mayo",
+                            "Junio",
+                            "Julio",
+                            "Agosto",
+                            "Septiembre",
+                            "Octubre",
+                            "Noviembre",
+                            "Diciembre"
+                        ];
+                        var dn = [
+                            'Domingo',
+                            'Lunes',
+                            'Martes',
+                            'Miércoles',
+                            'Jueves',
+                            'Viernes',
+                            'Sábado'
+                        ];
+                        break;
+                        //dansk
+                    case 'da':
+                        var mn = [
+                            "januar",
+                            "februar",
+                            "marts",
+                            "april",
+                            "maj",
+                            "juni",
+                            "juli",
+                            "august",
+                            "september",
+                            "oktober",
+                            "november",
+                            "december"
+                        ];
+                        var dn = [
+                            'søndag',
+                            'mandag',
+                            'tirsdag',
+                            'onsdag',
+                            'torsdag',
+                            'fredag',
+                            'lørdag'
+                        ];
+                        break;
+                        //deutsch
+                    case 'de':
+                        var mn = [
+                            "Januar",
+                            "Februar",
+                            "März",
+                            "April",
+                            "Mai",
+                            "Juni",
+                            "Juli",
+                            "August",
+                            "September",
+                            "Oktober",
+                            "November",
+                            "Dezember"
+                        ];
+                        var dn = [
+                            'Sonntag',
+                            'Montag',
+                            'Dienstag',
+                            'Mittwoch',
+                            'Donnerstag',
+                            'Freitag',
+                            'Samstag'
+                        ];
+                        break;
+                        //dutch
+                    case 'nl':
+                        var mn = [
+                            "januari",
+                            "februari",
+                            "maart",
+                            "april",
+                            "mei",
+                            "juni",
+                            "juli",
+                            "augustus",
+                            "september",
+                            "oktober",
+                            "november",
+                            "december"
+                        ];
+                        var dn = [
+                            'zondag',
+                            'maandag',
+                            'dinsdag',
+                            'woensdag',
+                            'donderdag',
+                            'vrijdag',
+                            'zaterdag'
+                        ];
+                        break;
+                        //francais
+                    case 'fr':
+                        var mn = [
+                            "Janvier",
+                            "Février",
+                            "Mars",
+                            "Avril",
+                            "Mai",
+                            "Juin",
+                            "Juillet",
+                            "Août",
+                            "Septembre",
+                            "Octobre",
+                            "Novembre",
+                            "Décembre"
+                        ];
+                        var dn = [
+                            'Dimanche',
+                            'Lundi',
+                            'Mardi',
+                            'Mercredi',
+                            'Jeudi',
+                            'Vendredi',
+                            'Samedi'
+                        ];
+                        break;
+                        //polski
+                    case 'pl':
+                        var mn = [
+                            "styczeń",
+                            "luty",
+                            "marzec",
+                            "kwiecień",
+                            "maj",
+                            "czerwiec",
+                            "lipiec",
+                            "sierpień",
+                            "wrzesień",
+                            "październik",
+                            "listopad",
+                            "grudzień"
+                        ];
+                        var dn = [
+                            'niedziela',
+                            'poniedziałek',
+                            'wtorek',
+                            'środa',
+                            'czwartek',
+                            'piątek',
+                            'sobota'
+                        ];
+                        break;
+                        //portuguese
+                    case 'pt':
+                        var mn = [
+                            "Janeiro",
+                            "Fevereiro",
+                            "Março",
+                            "Abril",
+                            "Maio",
+                            "Junho",
+                            "Julho",
+                            "Agosto",
+                            "Setembro",
+                            "Outubro",
+                            "Novembro",
+                            "Dezembro"
+                        ];
+                        var dn = [
+                            "Domingo",
+                            "Segunda",
+                            "Terça",
+                            "Quarta",
+                            "Quinta",
+                            "Sexta",
+                            "Sábado"
+                        ];
+                        break;
+                        //slovenian
+                    case 'si':
+                        var mn = [
+                            "januar",
+                            "februar",
+                            "marec",
+                            "april",
+                            "maj",
+                            "junij",
+                            "julij",
+                            "avgust",
+                            "september",
+                            "oktober",
+                            "november",
+                            "december"
+                        ];
+                        var dn = [
+                            'nedelja',
+                            'ponedeljek',
+                            'torek',
+                            'sreda',
+                            'četrtek',
+                            'petek',
+                            'sobota'
+                        ];
+                        break;
+                        //ukrainian
+                    case 'uk':
+                        var mn = [
+                            "січень",
+                            "лютий",
+                            "березень",
+                            "квітень",
+                            "травень",
+                            "червень",
+                            "липень",
+                            "серпень",
+                            "вересень",
+                            "жовтень",
+                            "листопад",
+                            "грудень"
+                        ];
+                        var dn = [
+                            'неділя',
+                            'понеділок',
+                            'вівторок',
+                            'середа',
+                            'четвер',
+                            'п\'ятниця',
+                            'субота'
+                        ];
+                        break;
+                        //russian
+                    case 'ru':
+                        var mn = [
+                            "январь",
+                            "февраль",
+                            "март",
+                            "апрель",
+                            "май",
+                            "июнь",
+                            "июль",
+                            "август",
+                            "сентябрь",
+                            "октябрь",
+                            "ноябрь",
+                            "декабрь"
+                        ];
+                        var dn = [
+                            'воскресенье',
+                            'понедельник',
+                            'вторник',
+                            'среда',
+                            'четверг',
+                            'пятница',
+                            'суббота'
+                        ];
+                        break;
+                        //turkish
+                    case 'tr':
+                        var mn = [
+                            "Ocak",
+                            "Şubat",
+                            "Mart",
+                            "Nisan",
+                            "Mayıs",
+                            "Haziran",
+                            "Temmuz",
+                            "Ağustos",
+                            "Eylül",
+                            "Ekim",
+                            "Kasım",
+                            "Aralık"
+                        ];
+                        var dn = [
+                            'Pazar',
+                            'Pazartesi',
+                            'Sali',
+                            'Çarşamba',
+                            'Perşembe',
+                            'Cuma',
+                            'Cumartesi'
+                        ];
+                        break;
+                        //korean	
+                    case 'ko':
+                        var mn = [
+                            "1월",
+                            "2월",
+                            "3월",
+                            "4월",
+                            "5월",
+                            "6월",
+                            "7월",
+                            "8월",
+                            "9월",
+                            "10월",
+                            "11월",
+                            "12월"
+                        ];
+                        var dn = [
+                            '일요일',
+                            '월요일',
+                            '화요일',
+                            '수요일',
+                            '목요일',
+                            '금요일',
+                            '토요일'
+                        ];
+                        break;
+                        //finnish
+                    case 'fi':
+                        var mn = [
+                            "Tammikuu",
+                            "Helmikuu",
+                            "Maaliskuu",
+                            "Huhtikuu",
+                            "Toukokuu",
+                            "Kesäkuu",
+                            "Heinäkuu",
+                            "Elokuu",
+                            "Syyskuu",
+                            "Lokakuu",
+                            "Marraskuu",
+                            "Joulukuu"
+                        ];
+                        var dn = [
+                            'Sunnuntai',
+                            'Maanantai',
+                            'Tiistai',
+                            'Keskiviikko',
+                            'Torstai',
+                            'Perjantai',
+                            'Lauantai'
+                        ];
+                        break;
+                        //english	
+                    default:
+                        var mn = [
+                            "January",
+                            "February",
+                            "March",
+                            "April",
+                            "May",
+                            "June",
+                            "July",
+                            "August",
+                            "September",
+                            "October",
+                            "November",
+                            "December"
+                        ];
+                        var dn = [
+                            'Sunday',
+                            'Monday',
+                            'Tuesday',
+                            'Wednesday',
+                            'Thursday',
+                            'Friday',
+                            'Saturday'
+                        ];
+                        break;
+                };
+
+
+
+
+                var
+                    _dd_init = function() {
+
+                        _dd.find('.dd-d li,.dd-s-b li').show();
+
+                        if (_dd_isB(_dd_y) && _dd_m == 2) {
+
+                            _dd.find('.dd-d ul').width(29 * _dd_settings.dropWidth);
+                            if (_dd_d == 30 || _dd_d == 31) {
+                                _dd_d = 29;
+                            }
+                            _dd.find('li[data-id=30],li[data-id=31]').hide();
+
+                        } else if (!_dd_isB(_dd_y) && _dd_m == 2) {
+
+                            _dd.find('.dd-d ul').width(28 * _dd_settings.dropWidth);
+                            if (_dd_d == 29 || _dd_d == 30 || _dd_d == 31) {
+                                _dd_d = 28;
+                            }
+                            _dd.find('li[data-id=29],li[data-id=30],li[data-id=31]').hide();
+
+                        } else if (_dd_m == 4 || _dd_m == 6 || _dd_m == 9 || _dd_m == 11) {
+
+                            _dd.find('.dd-d ul').width(30 * _dd_settings.dropWidth);
+                            if (_dd_d == 31) {
+                                _dd_d = 30;
+                            }
+                            _dd.find('li[data-id=31]').hide();
+
+                        } else {
+
+                            _dd.find('.dd-d ul').width(31 * _dd_settings.dropWidth);
+
+                        }
+
+                        _dd.find('.dd-d li').each(function(index, element) {
+
+                            var
+                                _d = $(this).attr('data-id'),
+                                _d = new Date(_dd_m + "/" + _d + "/" + _dd_y),
+                                _d = _d.getDay();
+
+                            if (_d == 0 || _d == 6) $(this).addClass('dd-sun');
+                            else $(this).removeClass('dd-sun');
+
+                            $(this).find('span').html(dn[_d]);
+
+                        });
+
+                        _dd.find('.dd-s-b-d li').each(function(index, element) {
+
+                            var
+                                _d = $(this).attr('data-id'),
+                                _d = new Date(_dd_m + "/" + _d + "/" + _dd_y),
+                                _d = _d.getDay();
+
+                            if (_d == 0 || _d == 6) $(this).addClass('dd-sun');
+                            else $(this).removeClass('dd-sun');
+
+                            $(this).find('span').html(dn[_d].substr(0, 3));
+
+                        });
+
+
+                        _dd.find('.dd-s-b li').removeClass('dd-on');
+                        _dd.find('.dd-s-b-d li[data-id="' + _dd_d + '"],.dd-s-b-m li[data-id="' + _dd_m + '"],.dd-s-b-s-y li[data-id="' + _dd_y + '"],.dd-s-b-y li[data-id="' + _dd_sub_y + '"]').addClass('dd-on');
+
+                        if (!_dd_settings.animate) {
+							
+							setTimeout(function(){
+								
+								_dd.find('.dd-d .dd-ul').scrollLeft(_dd.find('.dd-d li[data-id="' + _dd_d + '"]').index() * _dd_settings.dropWidth);
+								_dd.find('.dd-m .dd-ul').scrollLeft(_dd.find('.dd-m li[data-id="' + _dd_m + '"]').index() * _dd_settings.dropWidth);
+								_dd.find('.dd-y .dd-ul').scrollLeft(_dd.find('.dd-y li[data-id="' + _dd_y + '"]').index() * _dd_settings.dropWidth);
+								_dd.find('.dd-sub-y .dd-ul').scrollLeft(_dd.find('.dd-sub-y li[data-id="' + _dd_sub_y + '"]').index() * _dd_settings.dropWidth);
+							
+							},1);
+							
+							if (_dd.hasClass('dd-init')) {
+								
+								_dd.removeClass('dd-init');
+								_dd_init_state = true;
+							}
 	
-		// SET CURRENT DATE FUNCTIONS //
+                        } else {
+
+                            if (_dd.hasClass('dd-init')) {
+
+                                _dd.find('.dd-m .dd-ul').animate({
+									
+                                    scrollLeft: _dd.find('.dd-m li[data-id="' + _dd_m + '"]').index() * _dd_settings.dropWidth
+                                }, 1200, 'swing');
+                                setTimeout(function() {
+                                    _dd.find('.dd-d .dd-ul').animate({
+                                        scrollLeft: _dd.find('.dd-d li[data-id="' + _dd_d + '"]').index() * _dd_settings.dropWidth
+                                    }, 1200, 'swing');
+                                    setTimeout(function() {
+                                        _dd.find('.dd-y .dd-ul').animate({
+                                            scrollLeft: _dd.find('.dd-y li[data-id="' + _dd_y + '"]').index() * _dd_settings.dropWidth
+                                        }, 1200, 'swing',function(){
+											_dd_init_state = true;
+											_dd.removeClass('dd-init');
+										});
+                                    }, 200);
+                                }, 400);
+
+                                
+
+                            } else {
+
+                                _dd.find('.dd-d .dd-ul').stop().animate({
+                                    scrollLeft: _dd.find('.dd-d li[data-id="' + _dd_d + '"]').index() * _dd_settings.dropWidth
+                                }, 260);
+                                _dd.find('.dd-m .dd-ul').stop().animate({
+                                    scrollLeft: _dd.find('.dd-m li[data-id="' + _dd_m + '"]').index() * _dd_settings.dropWidth
+                                }, 260);
+                                _dd.find('.dd-y .dd-ul').stop().animate({
+                                    scrollLeft: _dd.find('.dd-y li[data-id="' + _dd_y + '"]').index() * _dd_settings.dropWidth
+                                }, 260);
+                                _dd.find('.dd-sub-y .dd-ul').stop().animate({
+                                    scrollLeft: _dd.find('.dd-sub-y li[data-id="' + _dd_sub_y + '"]').index() * _dd_settings.dropWidth
+                                }, 260);
+
+                            }
+                        }
+
+                        _dd_calculate(_dd_sub_y);
+
+
+                    },
+                    _dd_placement = function() {
+						
+						/*
+						
+                        var
+                            l1 = _dd_input.offset().top + _dd_input.innerHeight() + _dd.find('.dd-c').innerHeight(),
+                            l2 = $(window).scrollTop() + $(window).height(),
+                            dd_top,
+                            dd_left;
+	
+                        _dd.removeClass('dd-top dd-bottom');
+
+                        if (l1 > l2) {
+                            dd_top = _dd_input.offset().top - (_dd.find('.dd-c').innerHeight()) - 6;
+                            _dd.addClass('dd-top');
+                        } else {
+                            dd_top = _dd_input.offset().top + (_dd_input.innerHeight()) - 6;
+                            _dd.addClass('dd-bottom');
+                        }
+						
+						*/
+						
+						_dd.addClass('dd-bottom');
+
+                        _dd.find('.dd-c').css({
+                            'top': _dd_input.offset().top + (_dd_input.innerHeight()) - 6,
+                            'left': (_dd_input.offset().left + ((_dd_input.innerWidth() / 2) - (_dd_settings.dropWidth / 2)))
+                        }).addClass('dd-' + _dd_settings.init_animation);
+
+
+                    },
+                    _dd_alert = function() {
+
+                        _dd.find('.dd-c').addClass('dd-alert').removeClass('dd-' + _dd_settings.init_animation);
+                        setTimeout(function() {
+                            _dd.find('.dd-c').removeClass('dd-alert');
+                        }, 500);
+
+                    },
+                    _dd_submit = function() {
+
+                        if (_dd_settings.lock) {
+
+                            var
+                                d1 = Date.parse(t_y_cur + "-" + (t_m_cur + 1) + "-" + t_d_cur) / 1000,
+                                d2 = Date.parse(_dd_y + "-" + _dd_m + "-" + _dd_d) / 1000;
+
+                            if (_dd_settings.lock == 'from') {
+                                if (d2 < d1) {
+                                    _dd_alert();
+                                    return false;
+                                }
+                            } else {
+                                if (d2 > d1) {
+                                    _dd_alert();
+                                    return false;
+                                }
+                            }
+
+                        }
+
+                        var
+                            x = new Date(_dd_m + "/" + _dd_d + "/" + _dd_y),
+                            x = x.getDay();
+
+                        var
+                            str =
+                            _dd_settings.format
+                            .replace(/\b(d)\b/g, _dd_0(_dd_d))
+                            .replace(/\b(m)\b/g, _dd_0(_dd_m))
+                            .replace(/\b(Y)\b/g, _dd_y)
+                            .replace(/\b(D)\b/g, dn[x].substr(0, 3))
+                            .replace(/\b(l)\b/g, dn[x])
+                            .replace(/\b(F)\b/g, mn[_dd_m - 1])
+                            .replace(/\b(M)\b/g, mn[_dd_m - 1].substr(0, 3))
+                            .replace(/\b(n)\b/g, _dd_m)
+                            .replace(/\b(j)\b/g, _dd_d);
+
+                        _dd_input.val(str);
+
+                        _dd.find('.dd-c')
+                            .addClass('dd-fadeout')
+                            .removeClass('dd-' + _dd_settings.init_animation);
+
+                        _dd_event = setTimeout(function() {
+                            _dd.hide()
+                            _dd.find('.dd-c').removeClass('dd-fadeout');
+                        }, 400);
+						
+						_dd_input.change();
+
+
+                    },
+                    _dd_calculate = function(y) {
+
+                        _dd.find('.dd-s-b-s-y ul').empty();
+
+                        var
+                            _i = parseInt(y),
+                            _i_max = _i + (_dd_settings.yearsRange - 1);
+
+                        if (_i_max > _dd_settings.maxYear) _i_max = _dd_settings.maxYear;
+
+                        for (var i = _i; i <= _i_max; i++) {
+
+                            if (i % _dd_settings.yearsRange == 0) var _d_c_y = i;
+
+                            _dd.find('.dd-s-b-s-y ul').append('<li data-id="' + i + '" data-filter="' + _d_c_y + '">' + i + '</li>');
+
+                        }
+
+                        _dd.find('.dd-s-b-s-y ul').append('<div class="dd-clear"></div>');
+
+
+                        _dd_sub_y = parseInt(y);
+
+                        _dd.find('.dd-sub-y .dd-ul')
+                            .scrollLeft(_dd.find('.dd-sub-y li[data-id="' + _dd_sub_y + '"]').index() * _dd_settings.dropWidth);
+
+                        _dd.find('.dd-s-b-s-y li').each(function(index, element) {
+
+                            $(this).click(function() {
+
+                                _dd.find('.dd-s-b-s-y li').removeClass('dd-on');
+                                $(this).addClass('dd-on');
+
+                                _dd_y = parseInt($(this).attr('data-id'));
+
+                                _dd.find('.dd-s-b-y,.dd-s-b-s-y').removeClass('dd-show');
+                                _dd.find('.dd-s-b-s,.dd-sub-y').hide();
+
+                                _dd_init();
+
+                            });
+
+                        });
+
+                    },
+                    _dd_construct = function() {
+
+                        _dd.find('.dd-s-b').each(function(index, element) {
+
+                            var
+                                _dd_el = $(this),
+                                i_min = 0;
+
+                            if (_dd_el.hasClass('dd-s-b-m') || _dd_el.hasClass('dd-s-b-d')) {
+
+
+                                if (_dd_el.hasClass('dd-s-b-m')) {
+                                    var
+                                        i_max = 12,
+                                        _class = 'm';
+										
+									for (var i = i_min; i < i_max; i++) {
+	
+										_dd_el.find('ul')
+											.append('<li data-id="' + (i + 1) + '">' + mn[i].substr(0, 3) + '<span>' + _dd_0(i + 1) + '</span></li>');
+	
+									}
+                                }
+                                if (_dd_el.hasClass('dd-s-b-d')) {
+                                    var
+                                        i_max = 31,
+                                        _class = 'd';
+										
+									for (var i = i_min; i < i_max; i++) {
+	
+										_dd_el.find('ul')
+											.append('<li data-id="' + (i + 1) + '">' + _dd_0(i + 1) + '<span></span></li>');
+									}
+                                }
+
+                                
+
+                            }
+
+                            if (_dd_el.hasClass('dd-s-b-y')) {
+
+                                for (var i = _dd_settings.minYear; i <= _dd_settings.maxYear; i++) {
+                                    if (i % _dd_settings.yearsRange == 0)
+                                        _dd_el.find('ul').append('<li data-id="' + i + '">' + i + '</li>');
+                                }
+                            }
+
+                            _dd_el.find('ul').append('<div class="dd-clear"></div>');
+
+                            _dd_el.find('ul li').click(function() {
+
+                                if (_dd_el.hasClass('dd-s-b-m') || _dd_el.hasClass('dd-s-b-d')) {
+
+                                    if (_dd_el.hasClass('dd-s-b-m')) _dd_m = parseInt($(this).attr('data-id'));
+                                    if (_dd_el.hasClass('dd-s-b-d')) _dd_d = parseInt($(this).attr('data-id'));
+
+                                    _dd_init();
+
+                                    _dd_el.removeClass('dd-show');
+                                    _dd.find('.dd-s-b-s').hide();
+
+                                }
+                                if (_dd_el.hasClass('dd-s-b-y')) {
+
+                                    _dd.find('.dd-sub-y').show();
+                                    _dd_calculate($(this).attr('data-id'));
+                                    _dd.find('.dd-s-b-s-y').addClass('dd-show');
+
+                                }
+
+                            });
+
+
+                            var
+                                top = 0,
+                                scroll = false;
+
+                            _dd_el.on('mousewheel DOMMouseScroll', function(e) {
+
+                                scroll = true;
+
+                                if (e.originalEvent.wheelDeltaY < 0 || e.originalEvent.detail > 0)
+
+                                    top = _dd_el.scrollTop() + 100;
+
+                                if (e.originalEvent.wheelDeltaY > 0 || e.originalEvent.detail < 0)
+
+                                    top = _dd_el.scrollTop() - 100;
+
+                                _dd_el.stop().animate({
+
+                                    scrollTop: top
+
+                                }, 600, '_dd_easing', function() {
+
+                                    scroll = false;
+
+                                });
+
+
+                            }).on('scroll', function() {
+
+                                if (!scroll) top = _dd_el.scrollTop();
+
+                            });
+
+                        });
+
+
+                        _dd.find('.dd-b').each(function(index, element) {
+
+                            var
+                                _dd_el = $(this),
+                                _d_ps = 0,
+                                _te_event;
+
+                            if (_dd_el.hasClass('dd-m')) {
+
+                                for (var i = 0; i < 12; i++) {
+                                    _dd_el.find('ul').append('<li data-id="' + (i + 1) + '">' + mn[i].substr(0, 3) + '</li>');
+                                }
+
+                                _dd_el.find('li').click(function() {
+                                    if (_dd_settings.format == 'm' || _dd_settings.format == 'n' || _dd_settings.format == 'F' || _dd_settings.format == 'M')
+                                        return false;
+                                    _dd.find('.dd-s-b-m').addClass('dd-show');
+                                });
+
+                            }
+
+                            if (_dd_el.hasClass('dd-d')) {
+
+                                for (var i = 1; i <= 31; i++) {
+                                    _dd_el.find('ul').append('<li data-id="' + i + '"><strong>' + _dd_0(i) + '</strong><br><span></span></li>');
+                                }
+                                _dd_el.find('li').click(function() {
+                                    _dd.find('.dd-s-b-d').addClass('dd-show');
+                                });
+                            }
+
+                            if (_dd_el.hasClass('dd-y')) {
+
+                                for (var i = _dd_settings.minYear; i <= _dd_settings.maxYear; i++) {
+
+                                    var _d_c_y;
+                                    if (i % _dd_settings.yearsRange == 0) _d_c_y = 'data-filter="' + i + '"';
+
+                                    _dd_el.find('ul').append('<li data-id="' + i + '" ' + _d_c_y + '>' + i + '</li>');
+
+                                }
+
+                                _dd_el.find('li').click(function() {
+                                    if (_dd_settings.format == 'Y')
+                                        return false;
+                                    _dd.find('.dd-s-b-y').addClass('dd-show');
+                                });
+
+                            }
+                            if (_dd_el.hasClass('dd-sub-y')) {
+
+                                for (var i = _dd_settings.minYear; i <= _dd_settings.maxYear; i++) {
+
+                                    if (i % _dd_settings.yearsRange == 0)
+                                        _dd_el.find('ul').append('<li data-id="' + i + '">' + i + '</li>');
+
+                                }
+
+                            }
+
+                            _dd_el.find('ul').width(_dd_el.find('li').length * _dd_settings.dropWidth);
+
+
+                            ////////////////////// NAV ///////////////////////
+
+
+                            _dd_el.find('.dd-n').click(function() {
+
+                                clearInterval(_te_event);
+
+                                var
+                                    __dd_el,
+                                    x,
+                                    y;
+
+                                if (_dd_el.hasClass('dd-y')) x = _dd_y;
+                                if (_dd_el.hasClass('dd-m')) x = _dd_m;
+                                if (_dd_el.hasClass('dd-d')) x = _dd_d;
+                                if (_dd_el.hasClass('dd-sub-y')) x = _dd_sub_y;
+
+
+
+                                if ($(this).hasClass('dd-n-left')) {
+
+                                    __dd_el = _dd_el.find('li[data-id="' + x + '"]').prev('li');
+
+                                    if (__dd_el.length && __dd_el.is(":visible"))
+                                        y = parseInt(__dd_el.attr('data-id'));
+
+                                    else
+                                        y = parseInt(_dd_el.find('li:visible:last').attr('data-id'));
+
+
+                                } else {
+
+                                    __dd_el = _dd_el.find('li[data-id="' + x + '"]').next('li');
+
+                                    if (__dd_el.length && __dd_el.is(":visible"))
+                                        y = parseInt(__dd_el.attr('data-id'));
+                                    else
+                                        y = parseInt(_dd_el.find('li:first').attr('data-id'));
+                                }
+
+
+                                if (_dd_el.hasClass('dd-y')) _dd_y = y;
+                                if (_dd_el.hasClass('dd-m')) _dd_m = y;
+                                if (_dd_el.hasClass('dd-d')) _dd_d = y;
+                                if (_dd_el.hasClass('dd-sub-y')) _dd_sub_y = y;
+
+                                _dd_init();
+
+                            });
+
+                            var _detect = function() {
+
+                                if (_dd_init_state) {
+									
+                                    _d_ps = Math.round(_dd_el.find('.dd-ul').scrollLeft() / _dd_settings.dropWidth);
+                                    var value = parseInt(_dd_el.find('li').eq(_d_ps).attr('data-id'));
+
+                                    if (_dd_el.hasClass('dd-y')) _dd_y = value;
+                                    if (_dd_el.hasClass('dd-m')) _dd_m = value;
+                                    if (_dd_el.hasClass('dd-d')) _dd_d = value;
+                                    if (_dd_el.hasClass('dd-sub-y')) _dd_sub_y = value;
+	
+                                }
+
+                            };
+
+                            _dd_el.find('.dd-ul').on('scroll', function() {
+								
+                                _detect();
+	
+                            });
+							
+							var _dd_user = false;
+							
+							_dd_el.find('.dd-ul').on('mousedown touchstart', function() {
+								
+								if(!_dd_user) _dd_user = true;
+                                clearInterval(_te_event);
+								
+								$(window).on('mouseup touchend touchmove', function() {
+								
+									if(_dd_user) {
+									
+										clearInterval(_te_event);
+										_te_event = setTimeout(function() {
+											
+											_dd_init();
+											_dd_user = false;
+											
+										}, 780);
+									
+									}
 		
-		var 
-		selectCurrent 	= function() {
-			dd_d.find('li').eq(dd_d_current-1).addClass('dd_sltd_');
-			dd_m.find('li').eq(dd_m_current).addClass('dd_sltd_');
-			dd_y.find('li[value='+dd_y_current+']').addClass('dd_sltd_');
-			if(settings.years_multiple) dd_y_r.find('li[value='+yranger(dd_y_current)+']').addClass('dd_sltd_');
-		},
-		setValueDate = function(){
-			dd_d.find('li').eq(tempD-1).addClass('dd_sltd_');
-			dd_m.find('li').eq(tempM-1).addClass('dd_sltd_');
-			dd_y.find('li[value='+tempY+']').addClass('dd_sltd_');
-			if(settings.years_multiple) dd_y_r.find('li[value='+yranger(tempY)+']').addClass('dd_sltd_');
-		},
-		setDateAnimate 	= function() {
-			dd_m.find('.dd_sl_').animate({scrollLeft:dd_m.find('li.dd_sltd_').index()*range},1200,'swing');
-			setTimeout(function(){
-				dd_d.find('.dd_sl_').animate({scrollLeft:dd_d.find('li.dd_sltd_').index()*range},1200,'swing');
-				setTimeout(function(){
-					dd_y.find('.dd_sl_').animate({scrollLeft:dd_y.find('li.dd_sltd_').index()*range},1200,'swing');
-				},200);
-			},400);
-		},
-		setSelectedDate = function() {
-			dd_m.find('.dd_sl_').scrollLeft(dd_m.find('li.dd_sltd_').index()*range);
-			dd_d.find('.dd_sl_').scrollLeft(dd_d.find('li.dd_sltd_').index()*range);
-			dd_y.find('.dd_sl_').scrollLeft(dd_y.find('li.dd_sltd_').index()*range);
-		}
-		
-		
-		if(!tempD&&!tempM&&!tempY) selectCurrent(); else setValueDate();
-		
-		if(settings.format!='Y'&&settings.format!='m') {
-		
-			dd_d.find('li').click(function(){
-				var
-				dd = dd_d.find('li.dd_sltd_').attr('value');
-				dd_a_d.find('li').removeClass('dd_sltd_')
-				dd_a_d.find('li[value='+dd+']').addClass('dd_sltd_');
-				dd_a_d.addClass('dd_open_');
-			});
-			dd_a_d.find('li').click(function(){
-				var
-				dd = $(this).attr('value');
-				dd_d.find('li[value='+dd+']').click();
-				dd_a_d.removeClass('dd_open_');
-				calc();
-			});
-			dd_m.find('li').click(function(){
-				var
-				dd = dd_m.find('li.dd_sltd_').attr('value');
-				dd_a_m.find('li').removeClass('dd_sltd_')
-				dd_a_m.find('li[value='+dd+']').addClass('dd_sltd_');
-				dd_a_m.addClass('dd_open_');
-			});
-			dd_a_m.find('li').click(function(){
-				var
-				dd = $(this).attr('value');
-				dd_m.find('li[value='+dd+']').click();
-				dd_a_m.removeClass('dd_open_');
-				calc();
-			});
-			dd_y.find('li').click(function(){
-					dd_a_y.find('ul').empty();
-					var
-					dd = dd_y_r.find('li.dd_sltd_').attr('value'),
-					dd2 = dd_y.find('li.dd_sltd_').attr('value'),
-					dd10 = parseInt(dd) + 9;
-					if(dd10>settings.maxYear) dd10=settings.maxYear;
-					dd_a_y.find('li').removeClass('dd_sltd_');
+								});
+								
+                            });
+							
+                            if (_dd_settings.format == 'Y') _dd.find('.dd-m,.dd-d').hide();
+                            if (_dd_settings.format == 'm' || _dd_settings.format == 'n' || _dd_settings.format == 'F' || _dd_settings.format == 'M') _dd.find('.dd-y,.dd-d').hide();
+
+                        });
+
+                        _dd.find('.dd-b li').click(function() {
+
+                            if (_dd_settings.format == 'm' || _dd_settings.format == 'n' || _dd_settings.format == 'F' || _dd_settings.format == 'M' || _dd_settings.format == 'Y')
+                                return false;
+
+                            _dd.find('.dd-s-b-s').show();
+
+                        });
+
+                        _dd.find('.dd-s-b-s').click(function() {
+
+                            _dd.find('.dd-s-b').removeClass('dd-show');
+                            _dd.find('.dd-s-b-s').hide();
+
+                        });
+
+                        _dd.find('.dd-s').click(function() {
+
+                            _dd_submit();
+
+                        });
+                        _dd.find('.dd-o').click(function() {
+
+                            _dd.find('.dd-c')
+                                .addClass('dd-fadeout')
+                                .removeClass('dd-' + _dd_settings.init_animation);
+
+                            _dd_event = setTimeout(function() {
+                                _dd.hide()
+                                _dd.find('.dd-c').removeClass('dd-fadeout');
+                            }, 400);
+
+                        });
+
+                        _dd_init();
+
+                    },
+                    _dd_set = function() {
+						
+						clearInterval(_dd_event);
+
+                        if (_dd.hasClass('dd-init')) {
+							
+							_dd_input
+							.attr({
+								'readonly': 'readonly'
+							})
+							.blur();
+
+                            _dd_m = t_m_cur + 1,
+							_dd_d = t_d_cur,
+							_dd_y = t_y_cur;
+
+                            if (parseInt(_dd_input.attr('data-d')) && parseInt(_dd_input.attr('data-d')) <= 31)
+                                _dd_d = parseInt(_dd_input.attr('data-d'));
+
+                            if (parseInt(_dd_input.attr('data-m')) && parseInt(_dd_input.attr('data-m')) <= 11)
+                                _dd_m = parseInt(_dd_input.attr('data-m')) + 1;
+
+                            if (parseInt(_dd_input.attr('data-y')) && _dd_input.attr('data-y').length == 4)
+                                _dd_y = parseInt(_dd_input.attr('data-y'));
+
+                            if (_dd_y > _dd_settings.maxYear) _dd_settings.maxYear = _dd_y;
+                            if (_dd_y < _dd_settings.minYear) _dd_settings.minYear = _dd_y;
+
+                            _dd_construct();
+
+                        }
+						
+						_dd.show();
+						_dd_placement();
+						
+
+                    };
+
+                _dd_input.click(function() {
 					
-					for ( var yr = dd; yr <= dd10 ; yr++ ) {
-						dd_a_y.find('ul').append('<li value="'+yr+'">'+yr+'</li>')
-					}
-					dd_a_y.find('li[value='+dd2+']').addClass('dd_sltd_');
-					dd_a_y.addClass('dd_open_');
-					
-					dd_a_y.find('li').click(function(){
-						var
-						dd = $(this).attr('value');
-						dd_y.find('li[value='+dd+']').click();
-						dd_a_y.removeClass('dd_open_');
-						calc();
-					})
-			});
-		
-		}
-		
+                    _dd_set();
 
-		// SWITCH INTERFACE //
-		
-		switch(settings.format) {
-			case 'Y': dd_m.hide();dd_d.hide(); break;
-			case 'm': dd_y.hide();dd_y_r.hide();dd_d.hide(); break;
-		}
-		
-		// DECLARE CALC FUNCTIONS //
-		
-		var
-		calc	= function() {
-			
-			var
-			dd 	= dd_d.find('li.dd_sltd_').attr('value'),
-			mm 	= dd_m.find('li.dd_sltd_').attr('value'),
-			YY 	= dd_y.find('li.dd_sltd_').attr('value'),
-			YR 	= dd_y_r.find('li.dd_sltd_'),
-			bis = dd_y.find('li.dd_sltd_').attr('data-filter');
-			
-			dd_a_d.find('li').show();					
-			if(bis=='true'&&mm=='2') {
-				dd_d.find('ul').width(29*range);
-				if(dd==30||dd==31) {
-					dd_d.find('li').removeClass('dd_sltd_')
-					dd_d.find('li[value=29]').addClass('dd_sltd_');
-				}
-				dd_a_d.find('li[value=30],li[value=31]').hide();
-			}
-			else if(bis!='true'&&mm=='2') {
-				dd_d.find('ul').width(28*range);
-				if(dd==29||dd==30||dd==31) {
-					dd_d.find('li').removeClass('dd_sltd_')
-					dd_d.find('li[value=28]').addClass('dd_sltd_');
-				}
-				dd_a_d.find('li[value=29],li[value=30],li[value=31]').hide();
-			}
-			else if(mm=='11'||mm=='4'||mm=='6'||mm=='9') {
-				dd_d.find('ul').width(30*range);
-				if(dd==31) {
-					dd_d.find('li').removeClass('dd_sltd_')
-					dd_d.find('li[value=30]').addClass('dd_sltd_');
-				}
-				dd_a_d.find('li[value=31]').hide();
-			}
-			else {
-				dd_d.find('ul').width(31*range);
-			}
-	
-			dd_d.find('li').each(function(index, element) {
-			
-				tod = $(this).attr('value');
-	
-				d = new Date(mm+"/"+tod+"/"+YY); 
-				x = d.getDay(); 
-				
-				if(x==0) $(this).addClass('dd_sunday'); else $(this).removeClass('dd_sunday');
-				
-				$(this).find('em').html(dayNames[x]);
-	
-			});
-			dd_a_d.find('li').each(function(index, element) {
-			
-				tod = $(this).attr('value');
-	
-				d = new Date(mm+"/"+tod+"/"+YY); 
-				x = d.getDay(); 
-				
-				if(x==0) $(this).addClass('dd_sunday'); else $(this).removeClass('dd_sunday');
-	
-			});
-			
-			if(settings.years_multiple) {
-			
-				next = YR.next('li');
-				prev = YR.prev('li');
-	
-				if(YY>=next.attr('value')&&next.length) {
-					ymultiselect = next.attr('value');
-					dd_y_r.find('li').removeClass('dd_sltd_');
-					next.addClass('dd_sltd_');
-				}
-				else if(YY<ymultiselect&&prev.length) { 
-					ymultiselect = prev.attr('value');
-					dd_y_r.find('li').removeClass('dd_sltd_');
-					prev.addClass('dd_sltd_');
-				}		
-			}
-		},
-		dropperSubmit = function(str) {
-			dd_input.val(str).change();
-			dd_inner.addClass('dd_fadeout').removeClass('dd_'+settings.animation);
-			setTimeout(function(){dd_inner.hide().removeClass('dd_fadeout'); dd_id.hide();},300);
-		},
-		dropperAlert = function() {
-			dd_inner.addClass('dd_alert').removeClass('dd_'+settings.animation);
-			setTimeout(function(){
-				dd_inner.removeClass('dd_alert')
-			},500)
-		};
-		
-		// YEARS MULTIPLE //
-		
-		if(settings.years_multiple) {
-	
-			dd_y_r.find('li').on('click',function(){
-				
-				dd_y_r.find('li').removeClass('dd_sltd_');
-				$(this).addClass('dd_sltd_');
-				
-				var x = $(this).attr('value');
-				
-				ymultiselect = x;
-				
-				dd_y.find('.dd_sl_').stop().animate({scrollLeft:(dd_y.find('li[value='+x+']').index())*range},600,'swing');
-				dd_y.find('li').removeClass('dd_sltd_');
-				dd_y.find('li[value='+x+']').addClass('dd_sltd_');
-				
-				calc();
-			})
-			
-		}
-		
-		// DEFINE EACH DATEDROPPER SWIPER //
-		
-		dd_inner.find('.dd_sw_').each(function(index, element) {
-			
-			var 
-			dd_sel 		= $(this).find('.dd_sl_'),
-			dd_nav 		= $(this).find('.dd_nav_'),
-			ls			= dd_sel.find('li.dd_sltd_').index()*range,
-			lset 		= function(){
-				scroll_left = dd_sel.scrollLeft();
-				if(scroll_left>=ls+(range/2)) ls = ls+range;
-				if(scroll_left<=ls-(range/2)) ls = ls-range;
-			}
-			
-			dd_sel.find('ul').width(dd_sel.find('li').length*range);
-			
-			dd_sel.on('scroll mousemove',function(){
-				lset();
-			});
-			
-			dd_nav.click(function(){
-				
-				if($(this).hasClass('dd_next_')) obj = dd_sel.find('li.dd_sltd_').next('li');
-				else obj = dd_sel.find('li.dd_sltd_').prev('li');
+                });
 
-				if(obj.length) { 
-				
-					dd_sel.stop().animate({scrollLeft:obj.index()*range}, 200 );
-					dd_sel.find('li').removeClass('dd_sltd_');
-					obj.addClass('dd_sltd_');
-					calc();
-				}
-			});
-			
-			dd_sel.on('touchend',function(){
-				
-				dd_sel.stop().animate({scrollLeft:ls}, 200 );
-				
-				var x = (ls/range);
-				
-				dd_sel.find('li').removeClass('dd_sltd_');
-				dd_sel.find('li').eq(x).addClass('dd_sltd_');
-				
-				calc();
-			
-			});
-			
-			dd_sel.find('li').click(function(){
-				dd_sel.animate({scrollLeft:($(this).index())*range}, 200);
-				dd_sel.find('li').removeClass('dd_sltd_');
-				$(this).addClass('dd_sltd_');
-			});
+				_dd_input.bind('focusin focus', function(e){
+				  e.preventDefault();
+				})
 
-		});
-		
-		calc();
-		
-		// INPUT CLICK OR FOCUS TO ACTIVE DATEDROPPER //
-		
-		dd_input.on('click focus', function(){
-			
-			dd_id.show();
-			dd_inner.css({
-				'top':dd_input.offset().top+(dd_input.height()+12),
-				'left':(dd_input.offset().left+((dd_input.outerWidth()/2)-(range/2)))-2
-			}).show().addClass('dd_'+settings.animation);
-			
-			if(dd_input.hasClass('dd_locked')) {
-				
-				dd_input.removeClass('dd_locked');
-				
-				if(settings.animate_current!=false) setDateAnimate();
-				else setSelectedDate();
-				
-			}
-			
-			else setSelectedDate();
+                $(window).resize(function() {
 
-		});
+                    _dd_placement();
 
-		// ON BLUR //
-		
-		dd_overlay.click(function(){
-			dd_inner.addClass('dd_fadeout').removeClass('dd_'+settings.animation);
-			setTimeout(function(){
-				dd_inner.hide().removeClass('dd_fadeout');
-				dd_id.hide();
-			},300);
-			dd_inner.find('.dd_all_').removeClass('dd_open_');
-		});
-		
-		// ON DATEDROPPER SUBMIT //
-		 
-		dd_submit.click(function(){
-			
-			var
-			d = dd_d.find('li.dd_sltd_').attr('value'),
-			m = dd_m.find('li.dd_sltd_').attr('value'),
-			Y = dd_y.find('li.dd_sltd_').attr('value');
-			
-			if(d<10) d = '0'+d;
-			if(m<10) m = '0'+m;
-			
-			x = new Date(m+"/"+d+"/"+Y); 
-			x = x.getDay();
-			
-			//day
-			j = d.substr(1), 					// 1-31
-			D = dayNames[x].substr(0,3), 		// Sun, Mon
-			l = dayNames[x]; 					// Sunday, Monday
-			
-			//month
-			if(m<10) n = m.substr(1); else n = m; 	// 1-12
-			M = monthNames[n-1].substr(0, 3), 		// Jan, Feb
-			F = monthNames[n-1], 					// January, February
+                });
 
-			str = 
-			settings.format
-			.replace(/\b(Y)\b/i,Y)
-			.replace(/\b(m)\b/,m)
-			.replace(/\b(d)\b/i,d)
-			.replace(/\b(D)\b/i,D)
-			.replace(/\b(j)\b/i,j)
-			.replace(/\b(l)\b/i,l)
-			.replace(/\b(F)\b/i,F)
-			.replace(/\b(M)\b/,M)
-			.replace(/\b(n)\b/i,n);
 
-			if(settings.lock) {
-			
-				d1d = dd_d_current; if(d1d<10) d1d = '0'+d1d;
-				d1m = dd_m_current+1; if(d1m<10) d1m = '0'+d1m;
-				d1y = dd_y_current;
-				
-				var d1 = Date.parse(d1y+"-"+d1m+"-"+d1d) / 1000;
-				var d2 = Date.parse(Y+"-"+m+"-"+d) / 1000;
-				
-				if(settings.lock=='from') { if(d2 < d1) dropperAlert(); else dropperSubmit(str); }
-				else { if(d2 > d1) dropperAlert(); else dropperSubmit(str); }
-			
-			}
-			
-			else dropperSubmit(str);
-			
-				});
-			}
-		});
-	};
-}( jQuery ));
+            }
+        });
+    };
+}(jQuery));
